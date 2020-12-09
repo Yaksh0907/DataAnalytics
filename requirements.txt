@@ -198,3 +198,5 @@ xmltodict==0.12.0
 zict==2.0.0
 zipp==3.4.0
 zope.event==4.5.0
+pywin32==227
+xlwings==0.20.8
