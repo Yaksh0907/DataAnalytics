@@ -35,7 +35,7 @@ def trainGBM(gbm_n_estimators,gbm_max_depth, gbm_learning_rate):
     model = classifier.fit(X_train_std, y_train)
     return model
 
-def cR_to_df(model, y_test, y_pred):
+def classificationReport_to_dataframe(y_test, y_pred):
     cr = classification_report(y_test, y_pred, output_dict=True)
     row = {}
     row['Precision'] = [round(float(cr['1']['precision'])*100,2)]
@@ -45,10 +45,10 @@ def cR_to_df(model, y_test, y_pred):
 
 
     df = pd.DataFrame.from_dict(row)
-    # df=pd.DataFrame(row,index=['precision','recall','Accuracy','Balanced Accuracy'])
+
     return df
 
-def cm2df(y_test,y_pred):
+def matrixtodataframe(y_test,y_pred):
     cm=confusion_matrix(y_test,y_pred)
     labels=['0','1']
     df = pd.DataFrame()
@@ -60,6 +60,7 @@ def cm2df(y_test,y_pred):
             rowdata[col_label]=cm[i,j]
         df = df.append(pd.DataFrame.from_dict({row_label:rowdata}, orient='index'))
     return df[labels]
+
 
 
 style = {'padding': '1.5em'}
@@ -111,17 +112,17 @@ def gbm(n_estimators, max_depth, learning_rate):
         pipeline  = trainGBM(n_estimators, max_depth, learning_rate)
 
     y_pred = pipeline.predict(X_test_std)
-    performaceDF = cR_to_df(pipeline, y_test, y_pred)
-    confusionDF = cm2df(y_test, y_pred)
+    evaluationDF = classificationReport_to_dataframe(y_test, y_pred)
+    matrixDF = matrixtodataframe(y_test, y_pred)
 
-    tab1 = html.Div(children=[
-        html.Label(children='Performance Matrix', style={'width': '50%', 'display': 'inline-block',
+    table1 = html.Div(children=[
+        html.Label(children='Performance Matrix', style={'width': '40%', 'display': 'inline-block',
                                                          'margin': 0, 'padding': '8px'}),
         dash_table.DataTable(
             id='table_no1',
-            columns=[{"name": i, "id": i} for i in performaceDF.columns],
-            data=performaceDF.to_dict("rows"),
-            style_table={'width': '80%',
+            columns=[{"name": i, "id": i} for i in evaluationDF.columns],
+            data=evaluationDF.to_dict("rows"),
+            style_table={'width': '70%',
                          },
             style_data={
                 'whiteSpace': 'normal',
@@ -134,48 +135,46 @@ def gbm(n_estimators, max_depth, learning_rate):
             style_data_conditional=[
                 {
                     'if': {'row_index': 'odd'},
-                    'backgroundColor': 'rgb(248, 248, 248)'
+                    'backgroundColor': 'rgb(246, 246, 246)'
                 }
             ],
             style_header={
-                'backgroundColor': 'rgb(230, 230, 230)',
+                'backgroundColor': 'rgb(228, 228, 228)',
                 'fontWeight': 'bold'
             },
-            style_cell={'width': '180px',
-                        'height': '60px',
+            style_cell={'width': '170px',
+                        'height': '40px',
                         'textAlign': 'left',
                         'minWidth': '0px',
-                        'maxWidth': '180px'
+                        'maxWidth': '170px'
                         })])
 
-    tab2 = html.Div(
-        children=[html.Label(children='Confusion Matrix', style={'width': '50%', 'display': 'inline-block',
+    table2 = html.Div(
+        children=[html.Label(children='Confusion Matrix', style={'width': '40%', 'display': 'inline-block',
                                                                  'margin': 0, 'padding': '8px'}),
                   dash_table.DataTable(
                       id='confusionMatrix',
-                      columns=[{"name": i, "id": i} for i in confusionDF.columns],
-                      data=confusionDF.to_dict("rows"),
-                      style_table={'width': '60%',
+                      columns=[{"name": i, "id": i} for i in matrixDF.columns],
+                      data=matrixDF.to_dict("rows"),
+                      style_table={'width': '40%',
                                    },
                       style_data_conditional=[
                           {
                               'if': {'row_index': 'odd'},
-                              'backgroundColor': 'rgb(248, 248, 248)'
+                              'backgroundColor': 'rgb(246, 246, 246)'
                           }
                       ],
                       style_header={
-                          'backgroundColor': 'rgb(230, 230, 230)',
+                          'backgroundColor': 'rgb(228, 228, 228)',
                           'fontWeight': 'bold'
                       },
-                      style_cell={'width': '180px',
-                                  'height': '42px',
+                      style_cell={'width': '170px',
+                                  'height': '40px',
                                   'textAlign': 'left',
                                   'minWidth': '0px',
-                                  'maxWidth': '180px'
+                                  'maxWidth': '170px'
                                   })])
     final = html.Div([
         html.Br([]),
-        tab1, tab2], style=dict(display='flex'))
-    # testdiv=([html.H4('Random Forest', style=dict(color='white', background='red'))])
+        table1, table2], style=dict(display='flex'))
     return final
-
